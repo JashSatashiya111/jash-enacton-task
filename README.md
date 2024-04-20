@@ -37,6 +37,7 @@ Brands:
     DELETE /brand/delete_brand/:id - Delete a brand by ID
 
 Categories: 
+
     POST /category/add_category - Add a new category
     PUT /category/update_category/:id - Update a category
     GET /category/get_category/:id - Get a category by ID
@@ -44,6 +45,7 @@ Categories:
     DELETE /category/delete_category/:id - Delete a category by ID
 
 Products:
+
     POST /product/add_product - Add a new product
     PUT /product/update_product/:id - Update a product
     GET /product/get_product/:id - Get a product by ID
@@ -51,6 +53,7 @@ Products:
     DELETE /product/delete_product/:id - Delete a product by ID
 
 Uploads:
+
     POST /upload/upload_image - Upload an image
 
 

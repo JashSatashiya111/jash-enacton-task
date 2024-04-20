@@ -25,6 +25,10 @@ MONGODB_URI=your_mongodb_uri_here
 Start the server:
 npm start
 
+Postmna collection link: 
+
+    https://api.postman.com/collections/28001667-1620cfc5-a471-483c-9441-fe9d9ba6394b?access_key=PMAT-01HVXSHK99Z1P90XECNJB8JA2X
+
 
 Routes:
 

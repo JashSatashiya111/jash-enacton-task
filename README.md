@@ -11,7 +11,7 @@ Prerequisites: -
 
 Installation
 Clone the repository:
-git clone https://github.com/JashSatashiya111/e-commerce-api.git
+git clone https://github.com/JashSatashiya111/jash-enacton-task.git
 
 Install dependencies:
 

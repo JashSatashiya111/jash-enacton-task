@@ -59,3 +59,6 @@ Uploads:
 
 Error Handling:
     The API handles errors using custom error handling middlewarein app.js. If an error occurs, it will be logged and an error response will be sent to the client.
+
+Video link of explanation(sorry for the audio):
+    https://www.kapwing.com/w/dsye6NzNKJ

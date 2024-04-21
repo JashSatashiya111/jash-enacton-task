@@ -56,102 +56,54 @@ const get_product = asyncHandler(async (req, res, next) => {
 // get product with pagination:
 const get_product_list = asyncHandler(async (req, res, next) => {
   try {
-    const page = req.body.page || 1;
-    const limit = Number(req.body.limit) || 10;
-    const startIndex = (page - 1) * limit;
-
-    const field_name = req.body?.sort_by || 'createdAt';
-    const order_by = req.body?.order_by == 'ASC' ? 1 : -1;
-    const sortData = { [field_name]: order_by };
-
-    // Sorting and filtering conditions
-    let condition = {};
-    if (req.body.brands && req.body.brands.length) { // for brand filter 
-      condition = { 'brands': { $in: ObjectIds(req.body.brands) } }; // ObjectIds is global function in app.js to convert ids in to object id
-    }
-    if (req.body.categories && req.body.categories.length) {  // for category filter
-      condition = { 'categories': { $in: ObjectIds(req.body.categories) } };
-    }
-
-    if (req.body.occasion && req.body.occasion.length) {  // for occasion filter
-      condition = { 'occasion': { $in: req.body.occasion } };
-    }
-
-    if (req.body.min_price && req.body.max_price) { // for minimum and maximum proce filter
-      condition.selling_price = {
-        $gte: Number(req.body.min_price),
-        $lte: Number(req.body.max_price),
-      };
-    }
-
-    if (req.body.min_discount && req.body.max_discount) { // for custom minimum and maximum dicount filter
-      condition.discount = {
-        $gte: Number(req.body.min_discount),
-        $lte: Number(req.body.max_discount),
-      };
-    }
-
-    if (req.body.gender && req.body.gender.length) {  // for occasion filter
-      condition.gender = req.body.gender
-    };
-    // Aggregate query to get filtered and paginated data
-    const getProduct = await product.aggregate([
-      {
-        $match: condition
-      },
-      {
-        '$lookup': {
-          'from': 'brands',
-          'localField': 'brands',
-          'foreignField': '_id',
-          'as': 'brands',
-          'pipeline': [
-            {
-              '$project': {
-                'brand_name': 1
-              }
-            }
-          ]
+        const page = req.body.page || 1;
+        const limit = Number(req.body.limit) || 10;
+        const startIndex = (page - 1) * limit;
+    
+        const field_name = req.body?.sort_by || 'createdAt';
+        const order_by = req.body?.order_by == 'ASC' ? 1 : -1;
+        const sortData = { [field_name]: order_by };
+    
+        // Sorting and filtering conditions
+        let condition = {};
+        if (req.body.brands && req.body.brands.length) { // for brand filter 
+          condition = { 'brands': { $in: ObjectIds(req.body.brands) } }; // ObjectIds is global function in app.js to convert ids in to object id
         }
-      }, {
-        '$unwind': {
-          'path': '$brands',
-          'preserveNullAndEmptyArrays': true
+        if (req.body.categories && req.body.categories.length) {  // for category filter
+          condition = { 'categories': { $in: ObjectIds(req.body.categories) } };
         }
-      }, {
-        '$lookup': {
-          'from': 'categories',
-          'localField': 'categories',
-          'foreignField': '_id',
-          'as': 'categories',
-          'pipeline': [
-            {
-              '$project': {
-                'category_name': 1
-              }
-            }
-          ]
+    
+        if (req.body.occasion && req.body.occasion.length) {  // for occasion filter
+          condition = { 'occasion': { $in: req.body.occasion } };
         }
-      }, {
-        '$unwind': {
-          'path': '$categories',
-          'preserveNullAndEmptyArrays': true
+    
+        if (req.body.min_price && req.body.max_price) { // for minimum and maximum proce filter
+          condition.selling_price = {
+            $gte: Number(req.body.min_price),
+            $lte: Number(req.body.max_price),
+          };
         }
-      },
-      // Facet to get total record count and paginated data
-      {
-        $facet: {
-          metadata: [{ $count: "total_record" }, { $addFields: { page: Number(page) } }],
-          data: [{ $sort: sortData }, { $skip: startIndex }, { $limit: limit }],
-        },
-      },
-      { $project: { data: 1, totalRecord: { $first: "$metadata.total_record" }, current_page: { $first: "$metadata.page" } } },
-    ])
-    if (!getProduct[0].data.length) {
+    
+        if (req.body.min_discount && req.body.max_discount) { // for custom minimum and maximum dicount filter
+          condition.discount = {
+            $gte: Number(req.body.min_discount),
+            $lte: Number(req.body.max_discount),
+          };
+        }
+    
+        if (req.body.gender && req.body.gender.length) {  // for occasion filter
+          condition.gender = req.body.gender
+        };
+
+    const getProduct = await product.find(condition).populate('categories brands').sort(sortData).skip(startIndex).limit(limit);
+    if (!getProduct.length) {
       throwError('no product found', 400)
     }
 
-    return res.status(200).send({ data: getProduct, message: "product updated successfully" })
+    const getProductcount = await product.find(condition).countDocuments(); // to get total record count
+    const totalPage = Math.ceil(getProductcount / limit); // for total page count
+
+    return res.status(200).send({ data: { totalRecords: getProductcount, records: getProduct, currentPage: Number(page), totalPages: totalPage }, message: "product found" })
   } catch (error) {
     return next(setError(error, error?.status));
   }
